@@ -1,5 +1,5 @@
 # ardentaire
-
+## Introduction
 Ce bashcript a été codé dans le but d'automatiser les tâches réalisées dans la cadre des missions de l'Association pour le Ronéo Dentaire (ARD).
 
 Il comporte le script ardentaire, et sa dépendance mergeallpdf.
@@ -19,3 +19,13 @@ Celui-ci nécessite d'être utilisé dans les bonnes conditions :
 - Les répertoires comportant les PDF doivent avoir le titre de l'assemblage
 - Chaque répertoire doivent contenir un fichier stamplist, contenant les différents noms des personnes pour qui sont imprimés les polys
 
+---------------------------------------------------------------------
+
+## Installation
+CODE : sudo apt-get update && sudo apt-get install git
+CODE : mkdir -p ".bashscripts" && cd .bashscripts
+CODE : git clone https://github.com/bree29/ardentaire.git
+CODE : chmod +x ardentaire
+CODE : chmod +x mergeallpdf
+CODE : echo "export PATH=\"$HOME/.bashscripts:$PATH\"" > ~/.bashrc
+CODE : source ~/.bashrc
