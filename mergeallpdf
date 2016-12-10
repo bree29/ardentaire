@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#	On vides les variabls au cas où
+		file=
+		namefichier=
+		numberofpages=
+		uneven=
+	
+#	VARIABLES
+		SoftwareName="ARDentaire"
+		MergeAllPDF="$SoftwareName/MergeAllPDF"
+		StampPDF="$SoftwareName/StampedPDF"
+
+		ARDdir="$HOME/.ardentaire"
+		MergeAllPDFdir="$ARDdir/mergeallpdf"
+		StampPDFdir="$ARDdir/stamppdf"
+		pdgdir="$ARDdir/pdg"
+
+#	IN CASE OF
+		mkdir -p "$MergeAllPDFdir"
+		mkdir -p "$StampPDFdir"
+		mkdir -p "$pdgdir"
+		convert xc:none -page A4 "$pdgdir/blank.pdf"
+		blankpage="$pdgdir/blank.pdf"
+#
+#
+######################################################
+#
+		#Le Fichier aura le nom du répertoire courant
+				namefichier=${PWD##*/}
+				fichierfinal="$namefichier.pdf"
+mkdir -p "$MergeAllPDF"
+
+for file in *.pdf
+do 
+
+#get the number of pages
+  numberofpages=`pdftk "$file" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
+
+  echo -e "$file" a $numberofpages 'pages, '
+  uneven=$(($numberofpages % 2))
+  if [ $uneven == 1 ]
+  then
+    echo -e "ce qui est impair. Ajout d'une page blanche."
+    echo -e "Déplacement de le version pair du fichier dans $MergeAllPDFdir/$file\n"
+    pdftk "$file" "$blankpage" cat output "$MergeAllPDFdir"/"$file"
+  else
+    echo -e "ce qui est pair. Pas de modification."
+    echo -e "Copie de cette version du fichier dans $MergeAllPDFdir/$file\n"
+    cp "$file" "$MergeAllPDFdir"/"$file"
+  fi
+done
+
+
+echo -e "==> Fusion des PDFs..."
+pdftk "$MergeAllPDFdir"/*.pdf output "$MergeAllPDF"/"$fichierfinal" dont_ask
+
+echo -e "==> Suppression des fichiers temporaires..."
+rm "$MergeAllPDFdir"/*
+echo -e "\n\n      >> Done ! <<\n\n"
+
+exit 0

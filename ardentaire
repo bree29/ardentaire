@@ -1,0 +1,452 @@
+#!/bin/bash
+
+######################################################
+#
+#	APPLICATIONS A INSTALLER
+#		- pdftk
+#		- wkhtmltopdf
+#
+#		
+#	VARIABLES
+		SoftwareName="ARDentaire"
+		MergeAllPDF="$SoftwareName/MergeAllPDF"
+		StampPDF="$SoftwareName/StampedPDF"
+
+		ARDdir="$HOME/.ardentaire"
+		MergeAllPDFdir="$ARDdir/mergeallpdf"
+		StampPDFdir="$ARDdir/stamppdf"
+		pdgdir="$ARDdir/pdg"
+		pdgfile="PDG.pdf"
+
+#	IN CASE OF
+		mkdir -p "$MergeAllPDFdir"
+		mkdir -p "$StampPDFdir"
+		mkdir -p "$pdgdir"
+		convert xc:none -page A4 "$pdgdir/blank.pdf"
+		blankpage="$pdgdir/blank.pdf"
+#
+#
+######################################################
+
+resize -s 35 100
+# Fonction pause intéractive 
+function pause() {
+read -p ""
+}
+
+main() {
+accueil
+}
+
+
+
+	 #######################################
+	#					#
+	#		ACCUEIL			#
+	#					#
+	 #######################################
+
+
+accueil() {
+
+# On vide les variables au cas où :
+		file=
+		choixmenu=
+		eachdir=
+		namefichier=
+		numberofpages=
+		uneven=
+
+clear
+echo -e ""
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e "     ###                                                                   ###"
+echo -e "     ###                 A.R.Dentaire is a script written                  ###"
+echo -e "     ###                            by Bree                                ###"
+echo -e "     ###                         for A.R.Dentaire                          ###"
+echo -e "     ###                                                                   ###"
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e ""
+echo -e "                                                                    V.20161030"
+echo -e "	Ce script utilise pdfktk et wkhtmltopdf"
+echo -e "
+
+
+Vous devez vous trouver ici /ICI/DOSSIERS_DES_PDF_A_ASSEMBLER/*.pdf pour exécuter le script. Si ce n'est pas le cas, quittez le script avant de le relancer.
+
+	- ICI
+	|--P201
+	|--P202
+	|--P203
+	|--D101
+	|--D102
+	|--D103
+
+
+Ce script a deux composantes :
+	- MergeAllPDF qui permet de fusionner les différents PDF en un seul article
+	- StampPDF qui permet d'imprimer plusieurs articles, individuels, chacun contenant
+	le nom pour qui il est imprimé.
+
+En lançant MergeAllPDF, il vous sera proposé de tamponner chaque PDF.
+Si votre article est déjà existant, vous pouvez directement exécuter StampPDFs, sans avoir
+à réassembler les fichiers.
+
+Pour tamponner les fichiers, il vous sera nécessaire de créer un fichier dans le répertoire
+courant, avec, sur chaque ligne, le nom de la personne ayant commandé l'article.
+
+Aucune étape ne peut être faite si les étapes précédentes n'ont jamais été réalisées auparavant
+
+Que vous voulez-vous faire ?
+	[A]ll - Suivre chacune de ces étapes
+	1 - Edition des pages de garde
+	2 - MergeAllPDF
+	3 - StampPDFs
+
+	4 - Edition de la PDG + MergeAllPDF
+		(ça permet de n'avoir qu'à faire StampPDF au dernier moment)
+
+	[Q]uitter le script"
+
+local choixmenu
+read -n 1 choixmenu
+case $choixmenu in
+	1)	clear && fn_pdg && accueil ;;
+	2)	clear && fn_mergeallpdf && accueil ;;
+	3)	clear && fn_stamplist && accueil ;;
+	4)	clear && fn_pdg && fn_mergeallpdf ;;
+	A|a)	clear && fn_pdg && fn_mergeallpdf && fn_stamplist ;;
+	Q|q)	clear && exit 0 ;;
+	*)	echo -e "${error}\nCommande invalide..." && sleep 2 && accueil
+esac
+}
+
+
+
+
+fn_mergeallpdf () {
+##########################################################################################
+clear
+
+# PRÉSENTATION DU SCRIPT
+echo -e ""
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e "     ###                                                                   ###"
+echo -e "     ###         A.R.Dentaire - MergeAllPDF is a script written            ###"
+echo -e "     ###                            by Bree                                ###"
+echo -e "     ###                         for A.R.Dentaire                          ###"
+echo -e "     ###                                                                   ###"
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e ""
+echo -e "                                                                    V.20161030"
+echo -e "	Ce script utilise pdftk"
+echo -e "
+
+Ce script permet de :
+- rajouter une page blanche à la fin des fichiers dont le nombre de page est impair
+- fusionner tous les PDFs présents dans le dossier
+- créer ainsi le fichier pour impression dans le dossier \"$MergeAllPDF\" créé par le script.
+
+Appuyez sur une touche pour continuer."
+
+pause
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+clear
+echo -e "\n\n"
+echo '---------------------------------'
+echo '------  Adding Blank Pages  -----'
+echo '---------------------------------'
+echo -e "\n\n"
+
+for eachdir in *
+do
+cd "$eachdir"
+
+mergeallpdf
+
+cd ..
+done
+
+mv "$pdgdir/$pdgfile" "$pdgfile"
+
+echo -e ""
+echo -e "Cliquez sur [ENTRÉE] pour continuer."
+pause
+
+
+}
+
+
+##################################################################################################
+fn_pdg () {
+clear
+echo -e "Placez votre page de garde dans le dossier courant sous le nom \"PDG.pdf\" (respecter la case).
+Appuyez sur [ENTREE] une fois que c'est fait pour continuer l'exécution du script"
+pause
+
+#STEP 1 : mettre $pdgfile de coté, créer une copie qui servira à travailler.
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+cp "$pdgdir/$pdgfile" "$pdgdir/pdgtemp.pdf"
+#STEP 1b : on rend pair le nombre de page de pdgtemp.pdf
+convert xc:none -page A4 "$pdgdir/blank.pdf"
+blankpage="$pdgdir/blank.pdf"
+
+  numberofpages=`pdftk "$pdgdir/pdgtemp.pdf" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
+  uneven=$(($numberofpages % 2))
+  if [ $uneven == 1 ]
+  then
+    pdftk "$pdgdir/pdgtemp.pdf" "$blankpage" cat output "$pdgdir/pdgtemppair.pdf"
+    mv "$pdgdir/pdgtemppair.pdf" "$pdgdir/pdgtemp.pdf"
+  else echo
+  fi
+
+
+
+#STEP 2 : extraction de la première page pour la Stamp. Utilisation de PDFTK et de WKHTMLTOPDF
+# On découpe ainsi le fichier pdg en deux : d'une part la page 1, d'autre part le reste
+pdftk "$pdgdir/pdgtemp.pdf" cat 1 output "$pdgdir/pdgtemp1.pdf" #Extraction page 1
+pdftk "$pdgdir/pdgtemp.pdf" cat 2-END output "$pdgdir/pdgtemp2.pdf" #Extraction du reste
+rm -f "$pdgdir/pdgtemp.pdf" #il ne nous sert plus à rien, on le reconstituera
+
+#### 3. stamper première page de chaque nom de dossier, et copier cette page dans le dossier sous le nom "00000000_pdg.pdf"
+
+for eachdir in *
+do
+cd "$eachdir"
+namearticle=${PWD##*/} #L'Article aura le nom du répertoire courant
+pdgfinal="000000000_pdg_$namearticle.pdf"
+	    echo -e "\nLoading... for $eachdir directory..."
+	echo -e "<html><br/><br/><center><h1 style=\"font-size:40px\">"$namearticle"</h1><center></html>" > "$pdgdir"/stamp.html
+	wkhtmltopdf "$pdgdir"/stamp.html "$pdgdir"/stampblank.pdf
+	convert "$pdgdir"/stampblank.pdf -transparent white "$pdgdir"/stamp.pdf
+	pdftk "$pdgdir"/"pdgtemp1.pdf" stamp "$pdgdir"/stamp.pdf output "$pdgdir"/$pdgfinal dont_ask
+	pdftk "$pdgdir"/"$pdgfinal" "$pdgdir"/"pdgtemp2.pdf" cat output "$pdgfinal" dont_ask
+	rm -f "$pdgdir/stamp*"
+cd ..
+done
+
+mv "$pdgdir/$pdgfile" "$pdgfile"
+rm -r "$pdgdir"
+
+echo ""
+echo -e "Done !
+Appuyez sur [ENTRÉE] pour continuer."
+pause
+}
+
+fn_stamplist() {
+clear
+echo -e ""
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e "     ###                                                                   ###"
+echo -e "     ###           A.R.Dentaire - StampPDF is a script written             ###"
+echo -e "     ###                            by Bree                                ###"
+echo -e "     ###                         for A.R.Dentaire                          ###"
+echo -e "     ###                                                                   ###"
+echo -e "     #########################################################################"
+echo -e "     #########################################################################"
+echo -e ""
+echo -e "                                                                    V.20161030"
+echo -e "	Ce script utilise pdfktk et wkhtmltopdf"
+echo -e "
+Veuillez rentrer le nom du fichier StampList du répertoire courant.
+Si le fichier StampList n'existe pas, créez-le dans le dossier courant avant de continuer."
+read -p "Nom des fichiers stamplist : " stamplist
+
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+rm PolyToPrint.pdf
+mkdir -p "$StampPDFdir/files"
+
+for eachdir in *
+do
+cd "$eachdir"
+namefichier=${PWD##*/} #Le Fichier aura le nom du répertoire courant
+fichierfinal="$namefichier.pdf"
+
+
+if [ -f $stamplist ] && [ -s $fichier ]; ## PAS DE RETOUR CONSOLE // pas essayé OR
+then
+## file exists
+
+			# mkdir -p "$StampPDF"
+
+
+			###### STAMPING FIRST PAGE ########
+
+
+			# Boucle While
+			###############
+			while read name
+			    do
+				name=$name
+				rm -f "$StampPDFdir"/"stamp"*
+			######## STAMPING NAMES ####################
+				echo -e "Loading $namefichier directory...."
+				echo -e "Stamping PDF file for $line : $name-$namefichier.pdf"
+				echo -e "<html><h4>"$name-$namefichier"</h4></html>" > "$StampPDFdir"/stamp.html
+				wkhtmltopdf "$StampPDFdir"/stamp.html "$StampPDFdir"/stampblank.pdf
+				convert "$StampPDFdir"/stampblank.pdf -transparent white "$StampPDFdir"/stamp.pdf
+				pdftk "$MergeAllPDF"/"$namefichier".pdf stamp "$StampPDFdir"/stamp.pdf output "$StampPDFdir/files"/"$name"-"$namefichier".pdf dont_ask
+				echo ""
+			done < "$stamplist"
+
+else
+   echo -e "Il n'y a pas d'impressions prévu pour $namefichier (pas de fichier $stamplist)."
+fi
+
+
+cd ..
+done
+
+echo -e "Compiling final PDF Ready2Print ..."
+pdftk "$StampPDFdir"/files/*.pdf output PolyToPrint.pdf dont_ask
+echo -e "Done !\n"
+echo -e "==> Removing temporary files..."
+rm "$StampPDFdir"/ -r
+echo -e "\n\n      >> Done ! <<\n\n"
+
+echo -e "Vous pouvez maintenant quitter le script. Appuyez sur [ENTRÉE] pour revenir à l'accueil"
+mv "$pdgdir/$pdgfile" "$pdgfile"
+pause
+}
+
+
+perso() {
+#####################################" MERGEALLPDF
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+clear
+echo -e "\n\n"
+echo '---------------------------------'
+echo '------  Adding Blank Pages  -----'
+echo '---------------------------------'
+echo -e "\n\n"
+
+for eachdir in *
+do
+cd "$eachdir"
+
+mergeallpdf
+
+cd ..
+done
+
+mv "$pdgdir/$pdgfile" "$pdgfile"
+
+echo -e ""
+
+
+############################################## PDG
+echo -e "Placez votre page de garde dans le dossier courant sous le nom \"PDG.pdf\" (respecter la case).
+Appuyez sur [ENTREE] une fois que c'est fait pour continuer l'exécution du script"
+pause
+
+#STEP 1 : mettre $pdgfile de coté, créer une copie qui servira à travailler.
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+cp "$pdgdir/$pdgfile" "$pdgdir/pdgtemp.pdf"
+#STEP 1b : on rend pair le nombre de page de pdgtemp.pdf
+convert xc:none -page A4 "$pdgdir/blank.pdf"
+blankpage="$pdgdir/blank.pdf"
+
+  numberofpages=`pdftk "$pdgdir/pdgtemp.pdf" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
+  uneven=$(($numberofpages % 2))
+  if [ $uneven == 1 ]
+  then
+    pdftk "$pdgdir/pdgtemp.pdf" "$blankpage" cat output "$pdgdir/pdgtemppair.pdf"
+    mv "$pdgdir/pdgtemppair.pdf" "$pdgdir/pdgtemp.pdf"
+  else echo
+  fi
+
+
+
+#STEP 2 : extraction de la première page pour la Stamp. Utilisation de PDFTK et de WKHTMLTOPDF
+# On découpe ainsi le fichier pdg en deux : d'une part la page 1, d'autre part le reste
+pdftk "$pdgdir/pdgtemp.pdf" cat 1 output "$pdgdir/pdgtemp1.pdf" #Extraction page 1
+pdftk "$pdgdir/pdgtemp.pdf" cat 2-END output "$pdgdir/pdgtemp2.pdf" #Extraction du reste
+rm -f "$pdgdir/pdgtemp.pdf" #il ne nous sert plus à rien, on le reconstituera
+
+#### 3. stamper première page de chaque nom de dossier, et copier cette page dans le dossier sous le nom "00000000_pdg.pdf"
+
+for eachdir in *
+do
+cd "$eachdir"
+namearticle=${PWD##*/} #L'Article aura le nom du répertoire courant
+pdgfinal="000000000_pdg_$namearticle.pdf"
+	    echo -e "\nLoading... for $eachdir directory..."
+	echo -e "<html><br/><br/><center><h1 style=\"font-size:40px\">"$namearticle"</h1><center></html>" > "$pdgdir"/stamp.html
+	wkhtmltopdf "$pdgdir"/stamp.html "$pdgdir"/stampblank.pdf
+	convert "$pdgdir"/stampblank.pdf -transparent white "$pdgdir"/stamp.pdf
+	pdftk "$pdgdir"/"pdgtemp1.pdf" stamp "$pdgdir"/stamp.pdf output "$pdgdir"/$pdgfinal dont_ask
+	pdftk "$pdgdir"/"$pdgfinal" "$pdgdir"/"pdgtemp2.pdf" cat output "$pdgfinal" dont_ask
+	rm -f "$pdgdir/stamp*"
+cd ..
+done
+
+mv "$pdgdir/$pdgfile" "$pdgfile"
+rm -r "$pdgdir"
+
+echo ""
+echo -e "Done !"
+
+######################################################################################## STAMPING
+mkdir -p "$pdgdir"
+mv "$pdgfile" "$pdgdir/$pdgfile"
+mkdir -p "$StampPDFdir/files"
+
+for eachdir in *
+do
+cd "$eachdir"
+namefichier=${PWD##*/} #Le Fichier aura le nom du répertoire courant
+fichierfinal="$namefichier.pdf"
+
+
+
+
+
+				rm -f "$StampPDFdir"/"stamp"*
+			######## STAMPING NAMES ####################
+				echo -e "Loading $namefichier directory...."
+				echo -e "Stamping PDF file for : $namefichier.pdf"
+				echo -e "<html><h4>"$namefichier"</h4></html>" > "$StampPDFdir"/stamp.html
+				wkhtmltopdf "$StampPDFdir"/stamp.html "$StampPDFdir"/stampblank.pdf
+				convert "$StampPDFdir"/stampblank.pdf -transparent white "$StampPDFdir"/stamp.pdf
+				pdftk "$MergeAllPDF"/"$namefichier".pdf stamp "$StampPDFdir"/stamp.pdf output "$StampPDFdir/files"/"$namefichier".pdf dont_ask
+				echo ""
+
+
+
+cd ..
+done
+
+echo -e "Compiling final PDF Ready2Print ..."
+pdftk "$StampPDFdir"/files/*.pdf output PolyToPrint.pdf dont_ask
+echo -e "Done !\n"
+echo -e "==> Removing temporary files..."
+rm "$StampPDFdir"/ -r
+echo -e "\n\n      >> Done ! <<\n\n"
+
+echo -e "Vous pouvez maintenant quitter le script. Appuyez sur [ENTRÉE] pour revenir à l'accueil"
+mv "$pdgdir/$pdgfile" "$pdgfile"
+
+
+}
+
+
+
+rm "PolyToPrint.pdf"
+case $1 in
+	"")	main ;;
+	*)	$1
+esac
+
+
+exit
