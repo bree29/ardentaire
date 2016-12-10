@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Settings Vars
+$arddir="~/.ardentaire"
+$installfile=$pwd/${0##*/}
+
+# Setting up $arddir
+mkdir -p "$arddir/temp" && cd "$arddir"
+
+# Setting up bash scripts
+wget https://raw.githubusercontent.com/bree29/ardentaire/master/ardentaire && chmod +x ardentaire
+wget https://raw.githubusercontent.com/bree29/ardentaire/master/mergeallpdf && chmod +x mergeallpdf
+
+# Integration des scripts au PATH
+echo "export PATH=\"$HOME/$arddir:$PATH\"" >> ~/.bashrc && source ~/.bashrc
+
+# Suppression de l'installateur
+rm "$installfile"
+
+exit 0
