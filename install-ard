@@ -8,8 +8,8 @@ $installfile=$pwd/${0##*/}
 mkdir -p "$arddir/temp" && cd "$arddir"
 
 # Setting up bash scripts
-wget https://raw.githubusercontent.com/bree29/ardentaire/master/ardentaire && chmod +x ardentaire
-wget https://raw.githubusercontent.com/bree29/ardentaire/master/mergeallpdf && chmod +x mergeallpdf
+wget https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/ardentaire && chmod +x ardentaire
+wget https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/mergeallpdf && chmod +x mergeallpdf
 
 # Integration des scripts au PATH
 echo "export PATH=\"$HOME/$arddir:$PATH\"" >> ~/.bashrc && source ~/.bashrc
