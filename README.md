@@ -22,10 +22,5 @@ Celui-ci nécessite d'être utilisé dans les bonnes conditions :
 ---------------------------------------------------------------------
 
 ## Installation
-CODE : sudo apt-get update && sudo apt-get install git
-CODE : mkdir -p ".bashscripts" && cd .bashscripts
-CODE : git clone https://github.com/bree29/ardentaire.git
-CODE : chmod +x ardentaire
-CODE : chmod +x mergeallpdf
-CODE : echo "export PATH=\"$HOME/.bashscripts:$PATH\"" > ~/.bashrc
-CODE : source ~/.bashrc
+    wget https://raw.githubusercontent.com/bree29/ardentaire/master/install-ard
+    chmod +x install-ard && ./install-ard
