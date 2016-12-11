@@ -21,14 +21,10 @@ pdgdir="$ARDdir/pdg"
 pdgfile="PDG.pdf"
 
 # IN CASE OF
-echo "a"
-echo "e"
+
 mkdir -p "$MergeAllPDFdir"
-echo "b"
 mkdir -p "$StampPDFdir"
-echo "c"
 mkdir -p "$pdgdir"
-echo "d"
 convert xc:none -page A4 "$pdgdir/blank.pdf"
 blankpage="$pdgdir/blank.pdf"
 
@@ -70,7 +66,7 @@ case $choixmenu in
 	2)	clear && fn_mergeallpdf && accueil ;;
 	3)	clear && fn_stamplist && accueil ;;
 	4)	clear && fn_pdg && fn_mergeallpdf && accueil ;;
-	A|a)	clear && fn_pdg && fn_mergeallpdf && fn_stamplist ;;
+	A|a)	clear && fn_pdg && fn_mergeallpdf && fn_stamplist && accueil ;;
 	Q|q)	clear && exit 0 ;;
 	*)	echo -e "${error}\nCommande invalide..." && sleep 2 && accueil
 esac
@@ -83,20 +79,20 @@ fn_mergeallpdf () { ############################################################
 clear
 
 # PRÉSENTATION DU SCRIPT
-echo -e ""
-echo -e "     #########################################################################"
-echo -e "     #########################################################################"
-echo -e "     ###                                                                   ###"
-echo -e "     ###         A.R.Dentaire - MergeAllPDF is a script written            ###"
-echo -e "     ###                            by Bree                                ###"
-echo -e "     ###                         for A.R.Dentaire                          ###"
-echo -e "     ###                                                                   ###"
-echo -e "     #########################################################################"
-echo -e "     #########################################################################"
-echo -e ""
-echo -e "                                                                    V.20161030"
-echo -e "	Ce script utilise pdftk"
 echo -e "
+     #########################################################################
+     #########################################################################
+     ###                                                                   ###
+     ###         A.R.Dentaire - MergeAllPDF is a script written            ###
+     ###                            by Bree                                ###
+     ###                         for A.R.Dentaire                          ###
+     ###                                                                   ###
+     #########################################################################
+     #########################################################################
+
+                                                                   V.20161030
+	Ce script utilise pdftk
+
 
 Ce script permet de :
 - rajouter une page blanche à la fin des fichiers dont le nombre de page est impair
@@ -105,7 +101,7 @@ Ce script permet de :
 
 Appuyez sur une touche pour continuer."
 
-pause
+#pause
 mkdir -p "$pdgdir"
 mv "$pdgfile" "$pdgdir/$pdgfile"
 clear
@@ -126,9 +122,9 @@ done
 
 mv "$pdgdir/$pdgfile" "$pdgfile"
 
-echo -e ""
-echo -e "Cliquez sur [ENTRÉE] pour continuer."
-pause
+#echo -e ""
+#echo -e "Cliquez sur [ENTRÉE] pour continuer."
+#pause
 
 
 }
@@ -139,7 +135,7 @@ fn_pdg () { ####################################################################
 clear
 echo -e "Placez votre page de garde dans le dossier courant sous le nom \"PDG.pdf\" (respecter la case).
 Appuyez sur [ENTREE] une fois que c'est fait pour continuer l'exécution du script"
-pause
+#pause
 
 #STEP 1 : mettre $pdgfile de coté, créer une copie qui servira à travailler.
 mkdir -p "$pdgdir"
@@ -189,7 +185,7 @@ rm -r "$pdgdir"
 echo ""
 echo -e "Done !
 Appuyez sur [ENTRÉE] pour continuer."
-pause
+#pause
 }
 
 fn_stamplist() {
@@ -210,8 +206,8 @@ echo -e "	Ce script utilise pdfktk et wkhtmltopdf"
 echo -e "
 Veuillez rentrer le nom du fichier StampList du répertoire courant.
 Si le fichier StampList n'existe pas, créez-le dans le dossier courant avant de continuer."
-read -p "Nom des fichiers stamplist : " stamplist
-
+#read -p "Nom des fichiers stamplist : " stamplist
+stamplist="StampList"
 mkdir -p "$pdgdir"
 mv "$pdgfile" "$pdgdir/$pdgfile"
 rm PolyToPrint.pdf
@@ -393,13 +389,31 @@ accueil
 }
 
 
+countpages() {
+#mv "$pdgdir/$pdgfile" "$pdgfile"
+#mv "$pdgfile" "$pdgdir/$pdgfile"
+echo -e > "$BASEDIR/data" "Promotion|Nb pages"
+#read -p "Prix de la page en centimes : (x.xx) : " pricepage	
+for eachdir in *
+do
+numberofpages=`pdftk "$eachdir/ARDentaire/MergeAllPDF/$eachdir.pdf" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
+#price=$(echo "$numberofpages*($pricepage/100)" |bc -l )
+echo -e >> "$BASEDIR/data" "$eachdir|$numberofpages|$price"
+done
+
+clear
+cat "$BASEDIR/data" | column -e -t -s "|"
+pause
+exit 0
+}
+
 
 resize -s 35 100
 rm "PolyToPrint.pdf"
 case $1 in
 	"")	main ;;
-	*)	$1
+	--countpages)	countpages ;;
 esac
 
 mv "$pdgdir/$pdgfile" "$pdgfile"
-exit
+exit 0
