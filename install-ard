@@ -6,7 +6,7 @@ read -p ""
 
 # Settings Vars
 pathperso="~/.bashscripts"
-arddir=".ardentaire"
+arddir="~/.ardentaire"
 installfile="$PWD/${0##*/}"
 
 
