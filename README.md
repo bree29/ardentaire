@@ -1,4 +1,4 @@
-# ardentaire
+# A.R. Dentaire bashscripts
 ## Introduction
 Ce bashcript a été codé dans le but d'automatiser les tâches réalisées dans la cadre des missions de l'Association pour le Ronéo Dentaire (ARD).
 
@@ -21,6 +21,20 @@ Celui-ci nécessite d'être utilisé dans les bonnes conditions :
 
 ---------------------------------------------------------------------
 
-## Installation
+Cette procédure d'installation permet d'acquérir les versions les plus à jours de l'A.R. Dentaire. Ces versions sont normalement testées avant upload, mais ne sont pas, en soi, des versions définitives.
+
+## Dernières updates (+/- expérimentales)
+### Installation
     wget https://raw.githubusercontent.com/bree29/ardentaire/master/install-ard
     chmod +x install-ard && ./install-ard
+### Update
+    wget https://raw.githubusercontent.com/bree29/ardentaire/master/update-ard
+    chmod +x update-ard && ./update-ard
+
+## Dernière release stable
+### Installation
+    wget https://github.com/bree29/ardentaire/archive/V0.1a.tar.gz
+    tar -zxvf V0.1a.tar.gz ./ardentaire-0.1a/install-ard
+### Update
+    wget https://github.com/bree29/ardentaire/archive/V0.1a.tar.gz
+    tar -zxvf V0.1a.tar.gz ./ardentaire-0.1a/update-ard
