@@ -7,18 +7,14 @@
 		uneven=
 	
 #	VARIABLES
-		SoftwareName="ARDentaire"
-		MergeAllPDF="$SoftwareName/MergeAllPDF"
-		StampPDF="$SoftwareName/StampedPDF"
 
-		ARDdir="$HOME/.ardentaire"
-		MergeAllPDFdir="$ARDdir/mergeallpdf"
-		StampPDFdir="$ARDdir/stamppdf"
-		pdgdir="$ARDdir/pdg"
+SoftwareName="ARDentaire"
+MergeAllPDF="$SoftwareName/MergeAllPDF"
+		MergeAllPDFdir="/tmp/mergeallpdf"
+		pdgdir="$.ardentaire/pdg"
 
 #	IN CASE OF
 		mkdir -p "$MergeAllPDFdir"
-		mkdir -p "$StampPDFdir"
 		mkdir -p "$pdgdir"
 		convert xc:none -page A4 "$pdgdir/blank.pdf"
 		blankpage="$pdgdir/blank.pdf"
@@ -29,10 +25,20 @@
 		#Le Fichier aura le nom du répertoire courant
 				namefichier=${PWD##*/}
 				fichierfinal="$namefichier.pdf"
+
+fn_loop() {
 mkdir -p "$MergeAllPDF"
 
 for file in *.pdf
 do 
+fn_pairing # partie où l'on rend à nombre de pages paires les différents PDFs
+done
+fn_merging # partie où l'on fusionne cet ensemble de PDFs
+}
+
+
+
+fn_pairing() {
 
 #get the number of pages
   numberofpages=`pdftk "$file" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
@@ -49,14 +55,21 @@ do
     echo -e "Copie de cette version du fichier dans $MergeAllPDFdir/$file\n"
     cp "$file" "$MergeAllPDFdir"/"$file"
   fi
-done
+}
 
-
+fn_merging() {
 echo -e "==> Fusion des PDFs..."
 pdftk "$MergeAllPDFdir"/*.pdf output "$MergeAllPDF"/"$fichierfinal" dont_ask
 
 echo -e "==> Suppression des fichiers temporaires..."
 rm "$MergeAllPDFdir"/*
-echo -e "\n\n      >> Done ! <<\n\n"
+echo -e "\n\n      >> $namefichier done ! <<\n\n"
+}
+
+
+case $1 in
+	"")	fn_loop ;;
+	*)	$1
+esac
 
 exit 0
