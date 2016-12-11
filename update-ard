@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function pause() {
+read -p ""
+}
+
+# Settings Vars
+pathperso="~/.bashscripts"
+arddir="~/.ardentaire"
+installfile="$PWD/${0##*/}"
+
+# updating bashscripts
+echo -e "Supression des anciens scripts.."
+cd "$pathperso"
+rm ardentaire
+rm mergeallpdf
+
+echo -e "Téléchargement des scripts updatés"
+wget -q https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/ardentaire 
+wget -q https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/mergeallpdf
+
+echo -e "On rend les scripts executables...
+chmod +x ardentaire mergeallpdf
+
+# Suppression de l'installateur
+rm "$installfile"
+
+echo -e "Et voilà"
+
+exit 0
