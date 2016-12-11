@@ -1,18 +1,32 @@
 #!/bin/bash
 
+function pause() {
+read -p ""
+}
+
 # Settings Vars
-$arddir="~/.ardentaire"
-$installfile=$pwd/${0##*/}
+pathperso="~/.bashscripts"
+arddir=".ardentaire"
+installfile="$PWD/${0##*/}"
 
-# Setting up $arddir
-mkdir -p "$arddir/temp" && cd "$arddir"
 
-# Setting up bash scripts
-wget https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/ardentaire && chmod +x ardentaire
-wget https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/mergeallpdf && chmod +x mergeallpdf
+# Installing dependencies
+echo -e "Afin d'installer les paquets imagemagick, pdftk et wkhtmltopdf, nous nécessitons votre accès root." & sleep 1
+sudo apt-get -qq update
+echo -e "Mise à jour des dépôts..."
+echo -e "Téléchargement et installation des paquets imagemagick, pdftk et wkhtmltopdf..."
+sudo apt-get install -qq pdftk wkhtmltopdf imagemagick -y
 
-# Integration des scripts au PATH
-echo "export PATH=\"$HOME/$arddir:$PATH\"" >> ~/.bashrc && source ~/.bashrc
+# Setting up $arddir & bash scripts && Include in PATH
+mkdir -p "$pathperso" && cd "$pathperso"
+wget -q https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/ardentaire 
+wget -q https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/mergeallpdf
+chmod +x ardentaire mergeallpdf
+echo "export PATH=\"$HOME/$pathperso:$PATH\"" >> ~/.bashrc && source ~/.bashrc
+
+# Setting up .ardentaire directory && Integration des scripts au PATH
+mkdir -p "$arddir" && cd "$arddir"
+# wget -q https://raw.githubusercontent.com/bree29/ardentaire/master/scripts/config.ard && chmod +x config.ard
 
 # Suppression de l'installateur
 rm "$installfile"
