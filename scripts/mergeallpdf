@@ -11,7 +11,7 @@
 SoftwareName="ARDentaire"
 MergeAllPDF="$SoftwareName/MergeAllPDF"
 		MergeAllPDFdir="/tmp/mergeallpdf"
-		pdgdir="$.ardentaire/pdg"
+		pdgdir=".ardentaire/pdg"
 
 #	IN CASE OF
 		mkdir -p "$MergeAllPDFdir"
