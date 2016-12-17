@@ -5,8 +5,6 @@ function pause() {
 read -p ""
 }
 
-# DIRECTORY
-BASEDIR="$PWD"
 
 #Directories
 SoftwareName="ARDentaire"
@@ -28,16 +26,19 @@ mkdir -p "$pdgdir"
 convert xc:none -page A4 "$pdgdir/blank.pdf"
 blankpage="$pdgdir/blank.pdf"
 
+
+# ARD : CONF
+. "$ARDdir/ardentaire.conf" # BASEDIR
+cd "$BASEDIR"
+#BASEDIR="$PWD"
+
 #
 #
 ######################################################
 
 main() { ###############################################################################
-accueil
-}
-
-
-
+accueil 2>&1 | tee my.log
+} #2>&1 | tee -a /tmp/logfile.log
 accueil() { ############################################################################
 
 # On vide les variables qui seront utilisées au cas où :
@@ -111,8 +112,7 @@ echo '------  Adding Blank Pages  -----'
 echo '---------------------------------'
 echo -e "\n\n"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 
 mergeallpdf
@@ -164,8 +164,7 @@ rm -f "$pdgdir/pdgtemp.pdf" #il ne nous sert plus à rien, on le reconstituera
 
 #### 3. stamper première page de chaque nom de dossier, et copier cette page dans le dossier sous le nom "00000000_pdg.pdf"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 namearticle=${PWD##*/} #L'Article aura le nom du répertoire courant
 pdgfinal="000000000_pdg_$namearticle.pdf"
@@ -210,11 +209,9 @@ Si le fichier StampList n'existe pas, créez-le dans le dossier courant avant de
 stamplist="StampList"
 mkdir -p "$pdgdir"
 mv "$pdgfile" "$pdgdir/$pdgfile"
-rm PolyToPrint.pdf
 mkdir -p "$StampPDFdir/files"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 namefichier=${PWD##*/} #Le Fichier aura le nom du répertoire courant
 fichierfinal="$namefichier.pdf"
@@ -255,7 +252,9 @@ cd "$BASEDIR"
 done
 
 echo -e "Compiling final PDF Ready2Print ..."
-pdftk "$StampPDFdir"/files/*.pdf output PolyToPrint.pdf dont_ask
+CURRENTDATETIME=`date +'%y%m%d-%H%M%S'`
+PolyToPrint="PolyToPrint-$CURRENTDATETIME.pdf"
+pdftk "$StampPDFdir"/files/*.pdf output "$PolyToPrint" dont_ask
 echo -e "Done !\n"
 echo -e "==> Removing temporary files..."
 rm "$StampPDFdir"/ -r
@@ -263,7 +262,6 @@ echo -e "\n\n      >> Done ! <<\n\n"
 
 echo -e "Vous pouvez maintenant quitter le script. Appuyez sur [ENTRÉE] pour revenir à l'accueil"
 mv "$pdgdir/$pdgfile" "$pdgfile"
-pause
 }
 
 
@@ -278,8 +276,7 @@ echo '------  Adding Blank Pages  -----'
 echo '---------------------------------'
 echo -e "\n\n"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 
 mergeallpdf
@@ -324,8 +321,7 @@ rm -f "$pdgdir/pdgtemp.pdf" #il ne nous sert plus à rien, on le reconstituera
 
 #### 3. stamper première page de chaque nom de dossier, et copier cette page dans le dossier sous le nom "00000000_pdg.pdf"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 namearticle=${PWD##*/} #L'Article aura le nom du répertoire courant
 pdgfinal="000000000_pdg_$namearticle.pdf"
@@ -350,8 +346,7 @@ mkdir -p "$pdgdir"
 mv "$pdgfile" "$pdgdir/$pdgfile"
 mkdir -p "$StampPDFdir/files"
 
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
 cd "$eachdir"
 namefichier=${PWD##*/} #Le Fichier aura le nom du répertoire courant
 fichierfinal="$namefichier.pdf"
@@ -376,7 +371,9 @@ cd $BASEDIR
 done
 
 echo -e "Compiling final PDF Ready2Print ..."
-pdftk "$StampPDFdir"/files/*.pdf output PolyToPrint.pdf dont_ask
+CURRENTDATETIME=`date +'%y%m%d-%H%M%S'`
+PaolyToPrint="PolyToPrinfuck-$CURRENTDATETIME.pdf"
+pdftk "$StampPDFdir"/files/*.pdf output "$PaolyToPrint" dont_ask
 echo -e "Done !\n"
 echo -e "==> Removing temporary files..."
 rm "$StampPDFdir"/ -r
@@ -390,12 +387,10 @@ accueil
 
 
 countpages() {
-#mv "$pdgdir/$pdgfile" "$pdgfile"
-#mv "$pdgfile" "$pdgdir/$pdgfile"
 echo -e > "$BASEDIR/data" "Promotion|Nb pages"
 #read -p "Prix de la page en centimes : (x.xx) : " pricepage	
-for eachdir in *
-do
+for eachdir in `ls -d */`; do
+eachdir=${eachdir%%/}
 numberofpages=`pdftk "$eachdir/ARDentaire/MergeAllPDF/$eachdir.pdf" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
 #price=$(echo "$numberofpages*($pricepage/100)" |bc -l )
 echo -e >> "$BASEDIR/data" "$eachdir|$numberofpages|$price"
@@ -404,16 +399,26 @@ done
 clear
 cat "$BASEDIR/data" | column -e -t -s "|"
 pause
+rm "$BASEDIR/data"
 exit 0
 }
 
 
-resize -s 35 100
-rm "PolyToPrint.pdf"
+if [ -z $2 ]; then
 case $1 in
-	"")	main ;;
-	--countpages)	countpages ;;
+	"")	resize -s 35 100 && main ;;
+	--countpages|-cp)	countpages & exit 0;;
+	--allsteps|-as) 	clear && fn_pdg && fn_mergeallpdf && fn_stamplist && exit 0;;
+	--pdg)			clear && fn_pdg && exit 0;;
+	--mergeallpdf)		clear && fn_mergeallpdf && exit 0;;
+	--onlystamp)		clear && fn_stamplist && exit 0;;
+	*)			echo -e "
+	--countpages|-cp)	countpages & exit 0;;
+	--allsteps|-as) 	clear && fn_pdg && fn_mergeallpdf && fn_stamplist && exit 0;;
+	-pdg)			clear && fn_pdg;;"
+	mv "$pdgdir/$pdgfile" "$pdgfile"
+	exit 1
 esac
+fi
 
-mv "$pdgdir/$pdgfile" "$pdgfile"
 exit 0
