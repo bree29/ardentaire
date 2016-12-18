@@ -128,7 +128,7 @@ fichierfinal="$namefichier.pdf"
 		rm -f "$StampPDFdir"/"stamp"*
 		######## STAMPING NAMES ####################
 		echo -e "Loading $namefichier directory...."
-		echo -e "Stamping PDF file for $line : $name-$namefichier.pdf"
+		echo -e "Stamping PDF file for $name-$namefichier.pdf"
 		echo -e "<html><h4>"$name-$namefichier"</h4></html>" > "$StampPDFdir"/stamp.html
 		wkhtmltopdf "$StampPDFdir"/stamp.html "$StampPDFdir"/stampblank.pdf
 		convert "$StampPDFdir"/stampblank.pdf -transparent white "$StampPDFdir"/stamp.pdf
