@@ -9,9 +9,9 @@
 #	VARIABLES
 
 SoftwareName="ARDentaire"
-MergeAllPDF="$SoftwareName/MergeAllPDF"
+MergeAllPDF="$SoftwareName"
 		MergeAllPDFdir="/tmp/mergeallpdf"
-		pdgdir=".ardentaire/pdg"
+		pdgdir="$HOME/.ardentaire/pdg"
 
 #	IN CASE OF
 		mkdir -p "$MergeAllPDFdir"
@@ -26,50 +26,78 @@ MergeAllPDF="$SoftwareName/MergeAllPDF"
 				namefichier=${PWD##*/}
 				fichierfinal="$namefichier.pdf"
 
-fn_loop() {
-mkdir -p "$MergeAllPDF"
-
-for file in *.pdf
-do 
-fn_pairing # partie où l'on rend à nombre de pages paires les différents PDFs
-done
-fn_merging # partie où l'on fusionne cet ensemble de PDFs
-}
 
 
-
-fn_pairing() {
+fn_makeeven() { # Partie du script qui rendra les PDF à nombre pair de page. #--onlyevenfile non testé
 
 #get the number of pages
   numberofpages=`pdftk "$file" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
 
-  echo -e "$file" a $numberofpages 'pages, '
   uneven=$(($numberofpages % 2))
   if [ $uneven == 1 ]
   then
-    echo -e "ce qui est impair. Ajout d'une page blanche."
-    echo -e "Déplacement de le version pair du fichier dans $MergeAllPDFdir/$file\n"
+  echo -e "Impair ($numberofpages) : ajout d'une page blanche à \"$file\""
     pdftk "$file" "$blankpage" cat output "$MergeAllPDFdir"/"$file"
+#    pdftk "$file" "$blankpage" cat output "$MergeAllPDF"/"$file"
   else
-    echo -e "ce qui est pair. Pas de modification."
-    echo -e "Copie de cette version du fichier dans $MergeAllPDFdir/$file\n"
+  echo -e "Pair ($numberofpages) : pas de modification de \"$file\""
     cp "$file" "$MergeAllPDFdir"/"$file"
+    
   fi
 }
 
-fn_merging() {
-echo -e "==> Fusion des PDFs..."
+fn_merging() { # Partie du script qui fusionne tous les PDF du dossier courant
+echo -e "\n==> Fusion des PDFs..."
 pdftk "$MergeAllPDFdir"/*.pdf output "$MergeAllPDF"/"$fichierfinal" dont_ask
 
 echo -e "==> Suppression des fichiers temporaires..."
 rm "$MergeAllPDFdir"/*
-echo -e "\n\n      >> $namefichier done ! <<\n\n"
+echo -e "\n      >> $namefichier done ! <<\n"
 }
 
 
+fn_help() {
+echo -e "
+	MergeAllPDF is made for A.R.Dentaire purpose, but you can find utilities in it. Its
+	dependencie is pdftk - PDF Toolkit from PDF Labs.
+
+	It evenize all the *.pdf of the directory in a unique PDF you'll can find in
+	ARDentaire/MergeAllPDF/\$name_of_the_directory
+
+
+	Commands :
+
+		--help, -h
+			display this menu
+
+		[no argument]
+			as the name of the bashscripts says : it will merge all the PDF
+			of the current directory, after having evenize them.
+
+		--onlymerge
+			only merge all the .PDF files of the current directory, without evenize them before.
+
+		--onlyevenfile [file]
+			only even the PDF file you define. do not forget the .pdf at the end.
+
+		--onlyevenall
+			it evenize all the odd PDF of the currentdirectory. doesnt work at the moment !" ### !
+}
+
+
+mkdir -p "$MergeAllPDF"
+
 case $1 in
-	"")	fn_loop ;;
-	*)	$1
+	"")		mergeallpdf --onlyevenall && mergeallpdf --onlymerge ;;
+	--onlyevenfile)	file="$2"
+			fn_makeeven
+			mv "$MergeAllPDFdir"/"$file" "$file" ;; 
+	--onlyevenall)	for file in *.pdf
+			do 			#	DOESNT WORK
+			fn_makeeven 		#	HAVE TO FIN A WAY TO MOVE BACK THE FILES,
+			done ;;			#	!!! WITHOUT GENE FOR ARDENTAIRE BASHSCRIPT !!!
+	--onlymerge)	fn_merging ;;
+	--help|-h)	fn_help ;;
 esac
 
 exit 0
