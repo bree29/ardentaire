@@ -30,11 +30,7 @@ blankpage="$pdgdir/blank.pdf"
 # ARD : CONF
 . "$ARDdir/ardentaire.conf" # BASEDIR
 cd "$BASEDIR"
-#BASEDIR="$PWD"
 
-#
-#
-######################################################
 
 main() { ###############################################################################
 accueil 2>&1 | tee my.log
@@ -388,37 +384,50 @@ accueil
 
 countpages() {
 echo -e > "$BASEDIR/data" "Promotion|Nb pages"
-#read -p "Prix de la page en centimes : (x.xx) : " pricepage	
 for eachdir in `ls -d */`; do
 eachdir=${eachdir%%/}
 numberofpages=`pdftk "$eachdir/ARDentaire/MergeAllPDF/$eachdir.pdf" dump_data | sed -e '/NumberOfPages/!d;s/NumberOfPages: //'`
-#price=$(echo "$numberofpages*($pricepage/100)" |bc -l )
 echo -e >> "$BASEDIR/data" "$eachdir|$numberofpages|$price"
 done
-
 clear
 cat "$BASEDIR/data" | column -e -t -s "|"
-pause
 rm "$BASEDIR/data"
+pause
 exit 0
 }
 
+mkcountpages=0
+mkpdg=0
+mkmergeallpdf=0
+mkstamplist=0
 
-if [ -z $2 ]; then
-case $1 in
-	"")	resize -s 35 100 && main ;;
-	--countpages|-cp)	countpages & exit 0;;
-	--allsteps|-as) 	clear && fn_pdg && fn_mergeallpdf && fn_stamplist && exit 0;;
-	--pdg)			clear && fn_pdg && exit 0;;
-	--mergeallpdf)		clear && fn_mergeallpdf && exit 0;;
-	--onlystamp)		clear && fn_stamplist && exit 0;;
-	*)			echo -e "
-	--countpages|-cp)	countpages & exit 0;;
-	--allsteps|-as) 	clear && fn_pdg && fn_mergeallpdf && fn_stamplist && exit 0;;
-	-pdg)			clear && fn_pdg;;"
-	mv "$pdgdir/$pdgfile" "$pdgfile"
-	exit 1
-esac
-fi
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --countpages|-cp) 
+	mkcountpages=1
+        ;;
+    --allsteps|-as)
+	mkpdg=1
+	mkmergeallpdf=1
+	mkstamplist=1
+        ;;
+    --pdg)
+	mkpdg=1
+	;;
+    --mergeallpdf)
+    	mkmergeallpdf=1
+	;;
+    --onlystamp)
+    	mkstamplist=1
+	;;
+    ""|*) ;;
+    esac
+    shift
+done
+
+if [ $mkpdg = 1 ] ; then fn_pdg ; fi
+if [ $mkmergeallpdf = 1 ] ; then fn_mergeallpdf ; fi
+if [ $mkstamplist = 1 ] ; then fn_stamplist ; fi
+if [ $mkcountpages = 1 ] ; then fn_mkcountpages ; fi
 
 exit 0
