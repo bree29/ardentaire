@@ -105,7 +105,6 @@ echo -e "\n\n
 -------------------------------------
 -----  Stamping Names on files  -----
 -------------------------------------\n"
-stamplist="StampList"
 mkdir -p "$pdgdir"
 mkdir -p "$StampPDFdir/files"
 
@@ -211,6 +210,14 @@ echo -e "\n  ${b}$(basename $0) [OPTIONS]${n}
 		Ce fichier ${b}StampList${n} doit être créé dans chaque dossier
 		qui seront sanctionnés par cette personnalisation.
 
+	  ${b}-f [file]${n}
+		CET ARGUMENT DOIT ÊTRE UTILISÉ EN DERNIER ARGUMENT UNIQUEMENT
+		permet de définir un nom autre que \"StampList\" pour l'étape
+		\`--stamplist\`.
+			Exemple : $ \`$(basename $0) -as -f \"S37\"
+			Réalise les trois étapes précédentes mais le fichier
+			StampList sera nommé \"S37 \" et non pas \"StampList\".
+
 	  ${b}--allsteps, -as${n}
 		permet de réaliser successivement les trois étapes précédentes, à
 		la suite. Cela revient donc à réaliser :
@@ -229,19 +236,70 @@ echo -e "\n  ${b}$(basename $0) [OPTIONS]${n}
 		ou ouvrez le terminal dans ce dossier avant d'exécuter cette
 		commande.
 
+	  ${b}--noob${n}
+		lance une interface intermédiaire afin de sélectionner les actions
+		du programme (plutôt que de fournir des arguments).
+		L'usage de cet argument
+
 	  ${b}--help, -h${n}
 		comme quand on se plante de commande, permet d'afficher l'aide.
 "
 exit 0
 }
 
-if [ -z $1 ] ; then fn_help ; fi # si aucun argument est entré, display help | = *
 
+fn_noob() {
+echo -e "
+----------------------------------------------------
+	Bienvenue dans le programme de l'ARD
+----------------------------------------------------
+
+
+	Que voulez-vous faire ?
+	\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"
+
+	1. Réaliser les pages de garde
+	2. Réaliser les fichiers modèles
+	3. Stamp PDF selon la StampList
+
+	A. Réaliser l'étape 1 et 2
+	B. Réaliser les trois étapes
+
+	P. Compter les pages de chaque modèle
+
+	Q. Quitter le programme.
+	
+Votre choix :
+"
+
+local choixmenu
+read -n 1 choixmenu
+case $choixmenu in
+	1)   ardentaire --pdg && fn_noob ;;
+	2)   ardentaire --mergeallpdf && fn_noob ;;
+	3)   ardentaire --stamplist && fn_noob ;;
+	A|a) ardentaire --pdg --mergeallpdf && fn_noob ;;
+	B|b) ardentaire --as && fn_noob ;;
+	P|p) ardentaire --cp && fn_noob ;;
+	Q|q) exit 0 ;;
+esac
+
+}
+
+fn_init() {
 mkcountpages=0
 mkpdg=0
 mkmergeallpdf=0
 mkstamplist=0
 mkcfg=0
+iamnoob=0
+stamplist="StampList"
+}
+
+fn_init
+
+if [ -z $1 ] ; then fn_help ; fi # si aucun argument est entré, display help | = *
+
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -265,6 +323,13 @@ while [[ $# -gt 0 ]]; do
     --mkconfig)
 	mkcfg=1
 	;;
+    -f)
+	if [ -n $2 ] ; then
+	stamplist="$2"
+	shift
+	fi
+    --noob)
+	iamnoob=1
     *)
 	displayhelp=1
 	;;
@@ -272,8 +337,8 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-TIMESTART=$(date +"%r")
 
+if [ $iamnoob = 1 ] ; then fn_noob ; fi
 if [ $displayhelp = 1 ] ; then fn_help ; fi
 if [ $mkcfg = 1 ] ; then mkdir -p "$ARDdir" && echo -e "BASEDIR=$PWD" > "$ARDdir/ardentaire.conf" && . "$ARDdir/ardentaire.conf" ; fi
 if [ $mkpdg = 1 ] ; then fn_pdg ; fi
