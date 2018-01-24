@@ -12,8 +12,8 @@ installfile="$PWD/${0##*/}"
 
 # Installing dependencies
 echo -e "Afin d'installer les paquets imagemagick, pdftk et wkhtmltopdf, nous nécessitons votre accès root." & sleep 1
-sudo apt-get -qq update
 echo -e "Mise à jour des dépôts..."
+sudo apt-get -qq update
 echo -e "Téléchargement et installation des paquets imagemagick, pdftk et wkhtmltopdf..."
 sudo apt-get install -qq pdftk wkhtmltopdf imagemagick -y
 
