@@ -52,7 +52,7 @@ pdftk "$MergeAllPDFdir"/*.pdf output "$MergeAllPDF"/"$fichierfinal" dont_ask
 
 echo -e "==> Suppression des fichiers temporaires..."
 rm "$MergeAllPDFdir"/*
-echo -e "\n      >> $namefichier done ! <<\n"
+echo -e "\n      >> File $namefichier done ! <<\n"
 }
 
 
